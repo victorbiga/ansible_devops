@@ -1,0 +1,27 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+
+  - name: Install remi repo.
+    yum:
+      name: "http://rpms.famillecollet.com/enterprise/remi-release-6.rpm"
+      state: present
+
+  - name: Import remi GPG key.
+    rpm_key:
+      key: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
+      state: present
+
+  - name: Install EPEL repo.
+    yum: name=epel-release state=present
+
+#npm config set registry http://registry.npmjs.org/
+#this was required to fix cert error on the destination server
+
+  - name: Install Node.js and npm
+    yum: name=npm state=latest enablerepo=epel
+
+  - name: Install Forever (to run Node.js app)
+    npm: name=forever global=yes ignore_scripts=yes state=present

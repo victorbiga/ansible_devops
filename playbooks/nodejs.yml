@@ -20,7 +20,7 @@
     yum: name=epel-release state=present
 
   - name: Install Node.js and npm
-    yum: name=npm state=latest enablerepo=epel
+    yum: name=npm state=present enablerepo=epel
 
   - name: Set npm config registry to fix cert error on the destination server
     npm: 
@@ -28,6 +28,12 @@
       global: yes
       state: present
       registry: "http://registry.npmjs.org"
+
+  - name: Install express
+    npm:
+     name: express
+     global: yes
+     state: present
 
   - name: Ensure Node.js app folder exists.
     file: "path={{ node_apps_location }} state=directory"
@@ -37,3 +43,13 @@
 
   - name: Install app dependencies defined in package.json.
     npm: path={{ node_apps_location }}/app
+
+  - name: Check list of running Node.js apps.
+    command: forever list
+    register: forever_list
+    changed_when: false
+
+  - name: Start example Node.js app.
+    command: "forever start {{ node_apps_location }}/app/app.js"
+    when: "forever_list.stdout.find(node_apps_location + 'app/app.js') == -1"
+

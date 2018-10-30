@@ -1,6 +1,7 @@
 # Application server
 [app]
-172.31.26.57
+172.31.31.149
+
 
 [example]
 172.31.31.15

@@ -1,6 +1,8 @@
 ---
 - hosts: app
   become: yes
+  vars_files:
+    - vars.yml
 
   pre_tasks:
     - name: Update apt cache if needed.
@@ -42,3 +44,38 @@
         - libapache2-mod-php7.1
         - python-mysqldb
         - mysql-server
+
+    - name: Disable the firewall
+      service: name=ufw state=stopped
+
+    - name: Start apache, MySQL and PHP
+      service: "name={{ item }} state=started enabled=yes"
+      with_items:
+        - apache2
+        - mysql
+
+    - name: Enable Apache rewrite module 
+      apache2_module: name=rewrite state=present
+      notify: restart machine
+
+    - name: Add Apache virtualhost for Drupal 8 dev
+      template:
+        src: "jinja/drupal.test.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ domain }}.test.conf"
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart machine
+
+    - name: Symlink Drupal virtualhost to sites-enabled
+      file:
+        src: "/etc/apache2/sites-available/{{ domain }}.test.conf"
+        dest: "/etc/apache2/sites-enabled/{{ domain }}.test.conf"
+        state: link
+      notify: restart machine
+
+    - name: Remove default virtualhost file.
+      file:
+        path: "/etc/apache2/sites-enabled/000-default.conf"
+        state: absent
+      notify: restart machine

@@ -50,10 +50,6 @@
         - python-pip
         - libmysqlclient-dev
         
-
-#    - name: Install Python MySQL as it is fukd 
-#      pip: name=MySQL-python state=present
-
     - name: Disable the firewall
       service: name=ufw state=stopped
 
